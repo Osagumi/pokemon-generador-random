@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Pokémon Generator</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      var pokemonList = [];
+
+      // Fetch a random move from the PokeAPI
+      function fetchRandomMove() {
+        var randomId = Math.floor(Math.random() * 826) + 1; // Total number of moves is 826
+        var apiUrl = "https://pokeapi.co/api/v2/move/" + randomId;
+
+        return $.getJSON(apiUrl);
+      }
+
+      // Fetch random moves for each Pokémon
+      function fetchRandomMoves() {
+        var movePromises = [];
+        for (var i = 0; i < 4; i++) {
+          movePromises.push(fetchRandomMove());
+        }
+
+        return Promise.all(movePromises);
+      }
+
+      // Capitalize each word in a move name
+      function capitalizeMoveName(moveName) {
+        var words = moveName.split(" ");
+        for (var i = 0; i < words.length; i++) {
+          words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+        }
+        return words.join(" ");
+      }
+
+      // Fetch random Pokémon from the PokeAPI
+      function fetchRandomPokemon() {
+        var randomId = Math.floor(Math.random() * 898) + 1; // Total number of Pokémon is 898
+        var apiUrl = "https://pokeapi.co/api/v2/pokemon/" + randomId;
+
+        return $.getJSON(apiUrl);
+      }
+
+      // Generate random Pokémon
+      function generatePokemon() {
+        pokemonList = []; // Reset the list of Pokémon
+        var pokemonPromises = [];
+
+        for (var i = 0; i < 6; i++) {
+          pokemonPromises.push(fetchRandomPokemon());
+        }
+
+        Promise.all(pokemonPromises)
+          .then(function(results) {
+            var movePromises = [];
+
+            for (var i = 0; i < results.length; i++) {
+              movePromises.push(fetchRandomMoves());
+            }
+
+            return Promise.all(movePromises)
+              .then(function(moveResults) {
+                for (var i = 0; i < results.length; i++) {
+                  var pokemon = results[i];
+                  var moves = moveResults[i];
+
+                  pokemonList.push({ pokemon: pokemon, moves: moves });
+                }
+
+                displayPokemon();
+              });
+          });
+      }
+
+      // Display the Pokémon and their movesets
+      function displayPokemon() {
+        var output = "";
+        for (var i = 0; i < pokemonList.length; i++) {
+          var pokemon = pokemonList[i].pokemon;
+          var moves = pokemonList[i].moves;
+
+          output += "<div class='pokemon'>";
+          output += "<img src='" + pokemon.sprites.front_default + "' alt='" + pokemon.name + "' />";
+          output += "<h3>" + pokemon.name + "</h3>";
+          output += "<ul>";
+          for (var j = 0; j < moves.length; j++) {
+            var move = moves[j].name;
+            output += "<li>" + "-" + capitalizeMoveName(move) + "</li>"; // Add "-" at the beginning
+          }
+          output += "</ul>";
+          output += "</div>";
+        }
+
+        $('#pokemon-container').html(output);
+      }
+
+      // Reroll Pokémon
+      $('#reroll-button').click(function() {
+        generatePokemon();
