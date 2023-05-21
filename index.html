@@ -98,3 +98,26 @@
       // Reroll Pokémon
       $('#reroll-button').click(function() {
         generatePokemon();
+      });
+
+      generatePokemon();
+    });
+  </script>
+  <style>
+    .pokemon {
+      display: inline-block;
+      text-align: center;
+      margin: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="pokemon-container"></div>
+  <button id="reroll-button">Reroll Pokémon</button>
+</body>
+</html>
